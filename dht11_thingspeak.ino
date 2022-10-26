@@ -55,5 +55,6 @@ void loop()
   if(millis() - ultimoTempoConexao > THINGSPEAK_WRITE_INTERVAL)
   {
     enviaDadosThingSpeak(temperatura, umidade);
+    ultimoTempoConexao = millis();
   }
 }
