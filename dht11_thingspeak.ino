@@ -8,30 +8,17 @@
 #define DHT_SENSOR_TYPE DHT11 // Tipo de sensor.
 
 /* Configurações inicias para conexão com o WiFi e com a plataforma do ThingSpeak */
-const char* ssid = "brisa-2645429";
-const char* password = "besedb6o";
-
+const char* ssid = "";
+const char* password ="";
 /* Configurando sensor DHT11 */
 DHT dht_sensor(DHT_SENSOR_PIN, DHT_SENSOR_TYPE);
 
 /* Configurando variáveis associadas ao ThingSpeak. */
 #define THINGSPEAK_WRITE_INTERVAL 30000 // Configurando intervalo adequado para escrita no ThingSpeak
-const char * apiKeyEscrita = "0TIRZC2V7KC78RVI"; // Chave de API responsável por escrever no Canal do ThingSpeak
+const char * apiKeyEscrita = ""; // Chave de API responsável por escrever no Canal do ThingSpeak
 unsigned long numeroDoCanal = 1906050;
 WiFiClient client;
 unsigned long ultimoTempoConexao = 0;
-
-bool enviaDadosThingSpeak(float temperatura, float umidade)
-{
-  int okTemperatura = ThingSpeak.writeField(numeroDoCanal, 1, temperatura, apiKeyEscrita);
-  int okUmidade = ThingSpeak.writeField(numeroDoCanal, 2, umidade, apiKeyEscrita);
-  Serial.println(okTemperatura);
-  Serial.println(okUmidade);
-  if (okTemperatura == 200 && okUmidade == 200)
-  {
-    return true;
-  }
-}
 
 void setup()
 {
@@ -51,10 +38,18 @@ void setup()
 void loop()
 { 
   float temperatura = dht_sensor.readTemperature(); // Leitura da temperatura em Celsius
-  float umidade = dht_sensor.readHumidity(); // Leitura da umidade.
+  ThingSpeak.setField(1, temperatura);
+  int umidade = dht_sensor.readHumidity(); // Leitura da umidade.
+  ThingSpeak.setField(2, umidade);
+  
   if(millis() - ultimoTempoConexao > THINGSPEAK_WRITE_INTERVAL)
   {
-    enviaDadosThingSpeak(temperatura, umidade);
+    int resultado = ThingSpeak.writeFields(numeroDoCanal, apiKeyEscrita);
+    if(resultado == 200)
+    {
+      Serial.println("Resultados atualizados com sucesso!");
+    }
     ultimoTempoConexao = millis();
   }
+  
 }
